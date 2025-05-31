@@ -182,8 +182,8 @@ function showQuestion() {
   fill(0);
   textSize(18);
   text("第 " + (currentQuestion + 1) + " 題：", 660, 40);
-  text(q.q, 660, 70);
   textSize(16);
+  drawMultiline(q.q, 660, 70, 10); // 題目自動換行
   for (let i = 0; i < q.options.length; i++) {
     let y = 120 + i * 40;
     let opt = q.options[i];
@@ -199,7 +199,7 @@ function showQuestion() {
   if (showResult) {
     fill(q.answer === selectedAnswer ? "green" : "red");
     text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 660, 320);
-    text("3 秒後自動進入下一題...", 660, 350);
+    text("張開手切換下一題", 660, 350);
   }
 }
 
@@ -332,4 +332,30 @@ function drawBlackLines(keypoints) {
     line(x + i, y, x + i + random(-5, 5), y + 30 + random(0, 10));
   }
   pop();
+}
+
+function showHandGesture() {
+  if (handPredictions.length > 0 && !showResult && !waitingNext) {
+    let hand = handPredictions[0];
+    let fingerCount = countExtendedFingers(hand.landmarks);
+
+    // 1~4指選答案
+    if (fingerCount >= 1 && fingerCount <= 4) {
+      selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
+    }
+  }
+
+  // 張開手(五指)切換下一題
+  if (waitingNext && handPredictions.length > 0 && countExtendedFingers(handPredictions[0].landmarks) === 5) {
+    selectedAnswer = "";
+    showResult = false;
+    showEffect = false;
+    waitingNext = false;
+    currentQuestion++;
+    if (currentQuestion >= 5) {
+      gameState = "result";
+    } else {
+      questionStartTime = millis(); // 下一題開始計時
+    }
+  }
 }
