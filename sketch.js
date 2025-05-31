@@ -114,7 +114,7 @@ function modelReady() {}
 function handModelReady() {}
 
 function draw() {
-  background(255);
+  background(230);
 
   // 左側：攝影機與互動（左右相反）
   push();
@@ -123,7 +123,74 @@ function draw() {
   image(video, 0, 0, 640, 480);
   pop();
 
-  // 臉部特效與右側特效（座標不變，維持正常）
+  // 右側：美編題目區塊
+  push();
+  noStroke();
+  fill(255, 255, 245, 245);
+  rect(650, 30, 220, 420, 30);
+  drawingContext.shadowColor = "rgba(0,0,0,0.15)";
+  drawingContext.shadowBlur = 20;
+  pop();
+
+  fill(0);
+  textFont('Microsoft JhengHei');
+  textSize(22);
+  textAlign(CENTER, TOP);
+  text("教育科技課程知識大亂鬥", 760, 50);
+
+  if (gameState === "start") {
+    textSize(16);
+    fill(60, 60, 120);
+    textAlign(LEFT, TOP);
+    drawMultiline(
+      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 5秒自動進入下一題\n4. 共五題計分",
+      670, 110, 14
+    );
+  } else if (gameState === "quiz") {
+    if (currentQuestion >= quizQuestions.length) {
+      gameState = "result";
+      return;
+    }
+    showQuestion();
+
+    // 快問快答倒數5秒
+    let elapsed = (millis() - questionStartTime) / 1000;
+    fill(200, 60, 60);
+    textSize(18);
+    textAlign(CENTER, TOP);
+    text("倒數：" + max(0, (5 - floor(elapsed))) + " 秒", 760, 400);
+
+    // 5秒到自動判斷答案並進入下一題
+    if (!showResult && elapsed >= 5) {
+      showResult = true;
+      showEffect = true;
+      effectType = (selectedAnswer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
+      if (selectedAnswer === quizQuestions[currentQuestion].answer) score++;
+      effectTimer = millis();
+      setTimeout(() => {
+        selectedAnswer = "";
+        showResult = false;
+        showEffect = false;
+        currentQuestion++;
+        if (currentQuestion >= quizQuestions.length) {
+          gameState = "result";
+        } else {
+          questionStartTime = millis();
+        }
+      }, 1200); // 1.2秒特效後自動進入下一題
+    }
+  } else if (gameState === "result") {
+    fill(40, 80, 120);
+    textSize(22);
+    textAlign(CENTER, TOP);
+    text("挑戰結束！", 760, 100);
+    textSize(18);
+    text("你的分數：" + score + " / 5", 760, 170);
+    textSize(16);
+    text("按 Enter 再來一輪！", 760, 230);
+  }
+
+  // 臉部特效與右側特效
   if (predictions.length > 0 && showEffect) {
     const keypoints = predictions[0].scaledMesh;
     let headX = 640 - keypoints[10][0];
@@ -134,63 +201,8 @@ function draw() {
     } else if (effectType === "wrong") {
       image(crossImg, headX - 30, headY - 100, 60, 60);
       drawSadEffect(800, 120);
-      drawBlackLines(keypoints); // 傳入正確的 keypoints
+      drawBlackLines(keypoints);
     }
-  }
-
-  // 右側：遊戲內容
-  fill(240);
-  noStroke();
-  rect(640, 0, 260, 480);
-
-  fill(0);
-  textSize(20);
-  textAlign(LEFT, TOP);
-
-  if (gameState === "start") {
-    text("教育科技課程知識大亂鬥", 660, 40);
-    textSize(16);
-    drawMultiline(
-      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動判斷\n4. 張開手切換下一題\n5. 比讚可隨時看說明", 
-      660, 90, 12
-    );
-  } else if (gameState === "quiz") {
-    if (currentQuestion >= quizQuestions.length) {
-      gameState = "result";
-      return;
-    }
-    showQuestion();
-    showHandGesture();
-
-    // 快問快答倒數7秒
-    let elapsed = (millis() - questionStartTime) / 1000;
-    fill(255, 0, 0);
-    textSize(18);
-    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 660, 400);
-
-    // 7秒到自動判斷答案
-    if (!showResult && elapsed >= 7) {
-      showResult = true;
-      showEffect = true;
-      effectType = (selectedAnswer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
-      if (selectedAnswer === quizQuestions[currentQuestion].answer) score++;
-      waitingNext = true;
-    }
-
-    if (showHelp) {
-      fill(0, 180);
-      rect(650, 250, 230, 180, 12);
-      fill(255);
-      textSize(16);
-      drawMultiline("【遊戲說明】\n1. 一手比選項(1~4指)\n2. 另一手握拳確認答案\n3. 張開手(五指)切換下一題\n4. 比讚可隨時觀看說明", 660, 260, 12);
-    }
-    fill(100, 100, 255);
-    textSize(14);
-    drawMultiline("[比讚可隨時觀看說明]", 660, 440, 12);
-  } else if (gameState === "result") {
-    text("挑戰結束！", 660, 60);
-    text("你的分數：" + score + " / 5", 660, 120);
-    text("按 Enter 再來一輪！", 660, 180);
   }
 }
 
@@ -200,63 +212,67 @@ function showQuestion() {
   let q = quizQuestions[currentQuestion];
   fill(0);
   textSize(18);
-  text("第 " + (currentQuestion + 1) + " 題：", 660, 40);
+  textAlign(LEFT, TOP);
+  text("第 " + (currentQuestion + 1) + " 題：", 670, 70);
   textSize(16);
 
   // 題目自動換行
   let lines = [];
   let segs = q.q.split('\n');
   segs.forEach(seg => {
-    while (seg.length > 10) {
-      lines.push(seg.slice(0, 10));
-      seg = seg.slice(10);
+    while (seg.length > 12) {
+      lines.push(seg.slice(0, 12));
+      seg = seg.slice(12);
     }
     lines.push(seg);
   });
   for (let i = 0; i < lines.length; i++) {
-    text(lines[i], 660, 70 + i * 22);
+    text(lines[i], 670, 100 + i * 22);
   }
-  let optionStartY = 70 + lines.length * 22 + 20; // 選項起始y
+  let optionStartY = 100 + lines.length * 22 + 20; // 選項起始y
 
   for (let i = 0; i < q.options.length; i++) {
     let y = optionStartY + i * 40;
     let opt = q.options[i];
+    // 選項底色
     if (selectedAnswer === String.fromCharCode(65 + i)) {
-      fill(0, 150, 255);
-      rect(655, y - 5, 240, 35, 8);
+      fill(60, 150, 255, 220);
+      rect(665, y - 5, 200, 35, 10);
       fill(255);
     } else {
-      fill(0);
+      fill(60, 60, 120, 40);
+      rect(665, y - 5, 200, 35, 10);
+      fill(40, 40, 80);
     }
-    text(opt, 670, y);
+    text(opt, 680, y);
   }
   if (showResult) {
     fill(q.answer === selectedAnswer ? "green" : "red");
-    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 660, optionStartY + 180);
-    text("張開手切換下一題", 660, optionStartY + 210);
+    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 670, optionStartY + 180);
   }
 }
 
-// 右側說明文字建議
-function drawGameInstructions() {
-  drawMultiline(
-    "1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動判斷\n4. 張開手切換下一題\n5. 比讚可隨時看說明",
-    660, 90, 12
-  );
-}
+// 只保留選項手勢偵測
+function showHandGesture() {
+  if (handPredictions.length > 0 && !showResult && currentQuestion < quizQuestions.length) {
+    let hand = handPredictions[0];
+    let fingerCount = countExtendedFingers(hand.landmarks);
 
-// 自動換行繪製，每行最多 maxLen 字
-function drawMultiline(str, x, y, maxLen) {
-  let lines = [];
-  str.split('\n').forEach(seg => {
-    while (seg.length > maxLen) {
-      lines.push(seg.slice(0, maxLen));
-      seg = seg.slice(maxLen);
+    // 1~4指選答案，需連續偵測10幀
+    if (fingerCount >= 1 && fingerCount <= 4) {
+      if (fingerCount === lastFingerCount) {
+        fingerCountFrame++;
+      } else {
+        fingerCountFrame = 1;
+        lastFingerCount = fingerCount;
+      }
+      if (fingerCountFrame >= FINGER_HOLD_FRAME) {
+        selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
+      }
+    } else {
+      fingerCountFrame = 0;
+      lastFingerCount = 0;
     }
-    lines.push(seg);
-  });
-  for (let i = 0; i < lines.length; i++) {
-    text(lines[i], x, y + i * 22);
   }
 }
 
@@ -382,55 +398,4 @@ function drawBlackLines(keypoints) {
     line(x + i, y, x + i + random(-5, 5), y + 30 + random(0, 10));
   }
   pop();
-}
-
-function showHandGesture() {
-  if (handPredictions.length > 0 && !showResult && !waitingNext && currentQuestion < quizQuestions.length) {
-    let hand = handPredictions[0];
-    let fingerCount = countExtendedFingers(hand.landmarks);
-
-    // 1~4指選答案，需連續偵測10幀
-    if (fingerCount >= 1 && fingerCount <= 4) {
-      if (fingerCount === lastFingerCount) {
-        fingerCountFrame++;
-      } else {
-        fingerCountFrame = 1;
-        lastFingerCount = fingerCount;
-      }
-      if (fingerCountFrame >= FINGER_HOLD_FRAME) {
-        selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
-      }
-    } else {
-      fingerCountFrame = 0;
-      lastFingerCount = 0;
-    }
-  }
-
-  // 張開手(五指)切換下一題
-  if (waitingNext && handPredictions.length > 0 && isHandOpen(handPredictions[0].landmarks)) {
-    selectedAnswer = "";
-    showResult = false;
-    showEffect = false;
-    waitingNext = false;
-    currentQuestion++;
-    if (currentQuestion >= quizQuestions.length) {
-      gameState = "result";
-    } else {
-      questionStartTime = millis(); // 下一題開始計時
-    }
-  }
-
-  // 比讚顯示說明
-  if (handPredictions.length > 0 && isThumbsUpGesture(handPredictions[0].landmarks)) {
-    showHelp = true;
-  } else {
-    showHelp = false;
-  }
-}
-
-// 判斷手掌是否張開（五指伸直）
-function isHandOpen(landmarks) {
-  let fingersOpen = [8, 12, 16, 20].every(i => landmarks[i][1] < landmarks[i - 2][1]);
-  let thumbOpen = landmarks[4][0] > landmarks[3][0];
-  return fingersOpen && thumbOpen;
 }
