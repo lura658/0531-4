@@ -116,7 +116,7 @@ function draw() {
   // 臉部特效與右側特效（座標不變，維持正常）
   if (predictions.length > 0 && showEffect) {
     const keypoints = predictions[0].scaledMesh;
-    let headX = 640 - keypoints[10][0]; // 反轉後的頭頂座標
+    let headX = 640 - keypoints[10][0];
     let headY = keypoints[10][1];
     if (effectType === "correct") {
       image(checkImg, headX - 30, headY - 100, 60, 60);
@@ -124,7 +124,7 @@ function draw() {
     } else if (effectType === "wrong") {
       image(crossImg, headX - 30, headY - 100, 60, 60);
       drawSadEffect(800, 120);
-      drawBlackLines([headX, headY]);
+      drawBlackLines(keypoints); // 傳入正確的 keypoints
     }
   }
 
@@ -323,7 +323,7 @@ function drawFireworks(x, y) {
 
 // 答錯黑線特效
 function drawBlackLines(keypoints) {
-  let x = keypoints[10][0];
+  let x = 640 - keypoints[10][0];
   let y = keypoints[10][1] - 20;
   push();
   stroke(0);
