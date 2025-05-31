@@ -203,6 +203,21 @@ function showQuestion() {
   }
 }
 
+// 自動換行繪製，每行最多 maxLen 字
+function drawMultiline(str, x, y, maxLen) {
+  let lines = [];
+  str.split('\n').forEach(seg => {
+    while (seg.length > maxLen) {
+      lines.push(seg.slice(0, maxLen));
+      seg = seg.slice(maxLen);
+    }
+    lines.push(seg);
+  });
+  for (let i = 0; i < lines.length; i++) {
+    text(lines[i], x, y + i * 22);
+  }
+}
+
 // 握拳判斷（五指都彎曲）
 function isFistGesture(landmarks) {
   // 指尖y大於指根y，且拇指靠近掌心
