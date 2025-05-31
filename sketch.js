@@ -142,12 +142,20 @@ function draw() {
   drawingContext.shadowBlur = 20;
   pop();
 
-  // 主題標題自動換行，不超過白色框
-  fill(0);
+  // 主題區塊
+  push();
+  fill(240, 240, 210, 230);
+  stroke(200, 200, 180);
+  strokeWeight(1.5);
+  rect(660, 40, 200, 48, 16);
+  noStroke();
+  fill(40, 40, 80);
   textFont('Microsoft JhengHei');
   textSize(22);
-  textAlign(LEFT, TOP);
-  drawMultiline("教育科技課程知識大亂鬥", 670, 40, 8); // 每行最多8字，避免超框
+  textStyle(BOLD);
+  textAlign(CENTER, CENTER);
+  text("教育科技課程\n知識大亂鬥", 760, 64);
+  pop();
 
   if (gameState === "start") {
     textSize(16);
@@ -167,14 +175,15 @@ function draw() {
     showQuestion();
     showHandGesture();
 
-    // 倒數顯示（改為7秒）
+    // 倒數顯示（7秒）
     let elapsed = (millis() - questionStartTime) / 1000;
     fill(200, 60, 60);
-    textSize(18);
+    textSize(24);
+    textStyle(BOLD);
     textAlign(CENTER, TOP);
-    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 760, 400);
+    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 760, 420);
 
-    // 啟動自動切題計時器（改為7秒）
+    // 啟動自動切題計時器（7秒）
     if (!showResult && !autoNextTimer && elapsed < 7) {
       autoNextTimer = setTimeout(() => {
         nextQuestion();
@@ -208,19 +217,16 @@ function draw() {
       drawBlackLines(keypoints);
     }
   }
-  console.log(video);
 }
 
-// 顯示題目與選項
+// 顯示題目與選項（主題不再重複）
 function showQuestion() {
   if (currentQuestion >= quizQuestions.length) return; // 防呆
 
   let q = quizQuestions[currentQuestion];
-  fill(0);
+  fill(40, 40, 80);
   textSize(18);
   textAlign(LEFT, TOP);
-  text("第 " + (currentQuestion + 1) + " 題：", 670, 70);
-  textSize(16);
 
   // 題目自動換行
   let lines = [];
@@ -232,29 +238,42 @@ function showQuestion() {
     }
     lines.push(seg);
   });
+  // 題目區塊底色
+  push();
+  fill(255, 255, 230, 180);
+  rect(665, 100, 200, lines.length * 22 + 18, 10);
+  pop();
   for (let i = 0; i < lines.length; i++) {
-    text(lines[i], 670, 100 + i * 22);
+    text(lines[i], 675, 110 + i * 22);
   }
-  let optionStartY = 100 + lines.length * 22 + 20; // 選項起始y
+  let optionStartY = 110 + lines.length * 22 + 18; // 選項起始y
 
   for (let i = 0; i < q.options.length; i++) {
-    let y = optionStartY + i * 40;
+    let y = optionStartY + i * 44;
     let opt = q.options[i];
     // 選項底色
     if (selectedAnswer === String.fromCharCode(65 + i)) {
       fill(60, 150, 255, 220);
-      rect(665, y - 5, 200, 35, 10);
+      stroke(40, 80, 160);
+      strokeWeight(2);
+      rect(665, y - 5, 200, 38, 10);
       fill(255);
+      noStroke();
     } else {
-      fill(60, 60, 120, 40);
-      rect(665, y - 5, 200, 35, 10);
+      fill(220, 220, 240, 180);
+      stroke(120, 120, 180, 80);
+      strokeWeight(1.2);
+      rect(665, y - 5, 200, 38, 10);
       fill(40, 40, 80);
+      noStroke();
     }
-    text(opt, 680, y);
+    textSize(17);
+    text(opt, 680, y + 3);
   }
   if (showResult) {
     fill(q.answer === selectedAnswer ? "green" : "red");
-    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 670, optionStartY + 180);
+    textSize(18);
+    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 670, optionStartY + 200);
   }
 }
 
