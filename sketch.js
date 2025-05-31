@@ -130,7 +130,9 @@ function draw() {
   push();
   translate(640, 0);
   scale(-1, 1);
-  image(video, 0, 0, 640, 480);
+  if (video && video.loadedmetadata) {
+    image(video, 0, 0, 640, 480);
+  }
   pop();
 
   // 右側：美編題目區塊
@@ -207,6 +209,7 @@ function draw() {
       drawBlackLines(keypoints);
     }
   }
+  console.log(video);
 }
 
 // 顯示題目與選項
