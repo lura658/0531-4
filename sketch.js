@@ -28,6 +28,16 @@ const allQuestions = [
     answer: "D"
   },
   {
+    q: "下列何者是VR（虛擬實境）的應用？",
+    options: ["A. Google Earth VR", "B. 電子書", "C. 線上測驗", "D. 投影片播放"],
+    answer: "A"
+  },
+  {
+    q: "下列何者屬於AR（擴增實境）技術？",
+    options: ["A. Pokemon GO", "B. Word文書", "C. Excel試算表", "D. YouTube影片"],
+    answer: "A"
+  },
+  {
     q: "布魯姆認知領域的最低層次是？",
     options: ["A. 理解", "B. 應用", "C. 記憶", "D. 分析"],
     answer: "C"
@@ -145,6 +155,10 @@ function draw() {
       660, 90, 12
     );
   } else if (gameState === "quiz") {
+    if (currentQuestion >= quizQuestions.length) {
+      gameState = "result";
+      return;
+    }
     showQuestion();
     showHandGesture();
 
@@ -310,14 +324,13 @@ function drawSadEffect(x, y) {
 
 // 計算伸出的手指數量
 function countExtendedFingers(landmarks) {
-  let tips = [8, 12, 16, 20]; // 食指、中指、無名指、小指
+  // 只偵測食指(8)、中指(12)、無名指(16)、小指(20)
+  let tips = [8, 12, 16, 20];
   let count = 0;
   for (let i = 0; i < tips.length; i++) {
     if (landmarks[tips[i]][1] < landmarks[tips[i] - 2][1]) count++;
   }
-  // 拇指判斷
-  if (landmarks[4][0] > landmarks[3][0]) count++;
-  return count;
+  return count; // 1~4
 }
 
 // --- 新增全域變數 ---
