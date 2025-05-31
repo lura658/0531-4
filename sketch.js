@@ -194,74 +194,13 @@ function isFistGesture(landmarks) {
   return fingersBent && thumbBent;
 }
 
-// 比讚判斷（拇指伸直，其餘彎曲）
+// 判斷比讚（拇指伸直，其餘彎曲）
 function isThumbsUpGesture(landmarks) {
   let thumbUp = landmarks[4][1] < landmarks[3][1] && landmarks[4][1] < landmarks[2][1];
   let fingersBent = [8, 12, 16, 20].every(i => landmarks[i][1] > landmarks[i - 2][1]);
   return thumbUp && fingersBent;
 }
 
-function showHandGesture() {
-  if (handPredictions.length >= 2 && !showResult && !waitingNext) {
-    let handA = handPredictions[0];
-    let handB = handPredictions[1];
-    let countA = countExtendedFingers(handA.landmarks);
-    let countB = countExtendedFingers(handB.landmarks);
-
-    let fistA = isFistGesture(handA.landmarks);
-    let fistB = isFistGesture(handB.landmarks);
-
-    if (
-      ((countA >= 1 && countA <= 4) && fistB) ||
-      ((countB >= 1 && countB <= 4) && fistA)
-    ) {
-      let answer = String.fromCharCode(64 + (fistA ? countB : countA));
-      selectedAnswer = answer;
-      showResult = true;
-      showEffect = true;
-      effectType = (answer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
-      if (effectType === "correct") score++;
-      effectTimer = millis();
-      waitingNext = true;
-    }
-  }
-
-  // 比讚顯示說明
-  if (handPredictions.length > 0 && isThumbsUpGesture(handPredictions[0].landmarks)) {
-    showHelp = true;
-  } else {
-    showHelp = false;
-  }
-
-  // 張開手(五指)切換下一題
-  if (waitingNext && handPredictions.length > 0 && countExtendedFingers(handPredictions[0].landmarks) === 5) {
-    selectedAnswer = "";
-    showResult = false;
-    showEffect = false;
-    waitingNext = false;
-    currentQuestion++;
-    if (currentQuestion >= 5) {
-      gameState = "result";
-    }
-  }
-}
-
-// 自動換行繪製
-function drawMultiline(str, x, y, maxLen) {
-  let lines = [];
-  str.split('\n').forEach(seg => {
-    while (seg.length > maxLen) {
-      lines.push(seg.slice(0, maxLen));
-      seg = seg.slice(maxLen);
-    }
-    lines.push(seg);
-  });
-  for (let i = 0; i < lines.length; i++) {
-    text(lines[i], x, y + i * 22);
-  }
-}
-
-// 判斷OK手勢（拇指與食指指尖距離接近，其餘三指伸直）
 // 判斷OK手勢（拇指與食指指尖距離接近，其餘三指伸直）
 function isOKGesture(landmarks) {
   let thumbTip = landmarks[4];
