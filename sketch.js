@@ -142,18 +142,19 @@ function draw() {
   drawingContext.shadowBlur = 20;
   pop();
 
+  // 主題標題自動換行，不超過白色框
   fill(0);
   textFont('Microsoft JhengHei');
   textSize(22);
-  textAlign(CENTER, TOP);
-  text("教育科技課程知識大亂鬥", 760, 50);
+  textAlign(LEFT, TOP);
+  drawMultiline("教育科技課程知識大亂鬥", 670, 40, 8); // 每行最多8字，避免超框
 
   if (gameState === "start") {
     textSize(16);
     fill(60, 60, 120);
     textAlign(LEFT, TOP);
     drawMultiline(
-      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 3秒自動進入下一題\n4. 也可張開手掌提前切換\n5. 共五題計分",
+      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動進入下一題\n4. 也可張開手掌提前切換\n5. 共五題計分",
       670, 110, 14
     );
     clearAutoNextTimer();
@@ -166,18 +167,18 @@ function draw() {
     showQuestion();
     showHandGesture();
 
-    // 倒數顯示
+    // 倒數顯示（改為7秒）
     let elapsed = (millis() - questionStartTime) / 1000;
     fill(200, 60, 60);
     textSize(18);
     textAlign(CENTER, TOP);
-    text("倒數：" + max(0, (3 - floor(elapsed))) + " 秒", 760, 400);
+    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 760, 400);
 
-    // 啟動自動切題計時器
-    if (!showResult && !autoNextTimer && elapsed < 3) {
+    // 啟動自動切題計時器（改為7秒）
+    if (!showResult && !autoNextTimer && elapsed < 7) {
       autoNextTimer = setTimeout(() => {
         nextQuestion();
-      }, 3000 - (millis() - questionStartTime));
+      }, 7000 - (millis() - questionStartTime));
     }
   } else if (gameState === "result") {
     fill(40, 80, 120);
