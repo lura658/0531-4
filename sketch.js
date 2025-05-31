@@ -78,6 +78,7 @@ function preload() {
 
 let showHelp = false;
 let waitingNext = false;
+let questionStartTime = 0; // 新增：紀錄每題開始時間
 
 function setup() {
   createCanvas(900, 480).position(
@@ -143,6 +144,22 @@ function draw() {
   } else if (gameState === "quiz") {
     showQuestion();
     showHandGesture();
+
+    // 快問快答倒數7秒
+    let elapsed = (millis() - questionStartTime) / 1000;
+    fill(255, 0, 0);
+    textSize(18);
+    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 660, 400);
+
+    // 7秒到自動判斷答案
+    if (!showResult && elapsed >= 7) {
+      showResult = true;
+      showEffect = true;
+      effectType = (selectedAnswer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
+      if (selectedAnswer === quizQuestions[currentQuestion].answer) score++;
+      waitingNext = true;
+    }
+
     if (showHelp) {
       fill(0, 180);
       rect(650, 250, 230, 180, 12);
@@ -269,6 +286,7 @@ function keyPressed() {
     selectedAnswer = "";
     showResult = false;
     showEffect = false;
+    questionStartTime = millis(); // 新增：開始計時
   }
   if (gameState === "result" && keyCode === ENTER) {
     gameState = "start";
