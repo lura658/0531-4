@@ -15,17 +15,12 @@ let showEffect = false;
 let effectType = ""; // "correct" or "wrong"
 let effectTimer = 0;
 
-// 題庫（p5.js、教學原理、教育心理、攝影基礎）
+// 題庫（p5.js、VR/AR、攝影基礎等）
 const allQuestions = [
   {
     q: "p5.js 中用來建立畫布的函式是？",
     options: ["A. createCanvas", "B. createRect", "C. makeCanvas", "D. setupCanvas"],
     answer: "A"
-  },
-  {
-    q: "皮亞傑認為兒童在什麼階段開始具備抽象思考能力？",
-    options: ["A. 感覺動作期", "B. 前運思期", "C. 具體運思期", "D. 形式運思期"],
-    answer: "D"
   },
   {
     q: "下列何者是VR（虛擬實境）的應用？",
@@ -36,11 +31,6 @@ const allQuestions = [
     q: "下列何者屬於AR（擴增實境）技術？",
     options: ["A. Pokemon GO", "B. Word文書", "C. Excel試算表", "D. YouTube影片"],
     answer: "A"
-  },
-  {
-    q: "布魯姆認知領域的最低層次是？",
-    options: ["A. 理解", "B. 應用", "C. 記憶", "D. 分析"],
-    answer: "C"
   },
   {
     q: "攝影中調整亮度最直接的參數是？",
@@ -68,14 +58,34 @@ const allQuestions = [
     answer: "C"
   },
   {
-    q: "維果斯基強調學習的哪個概念？",
-    options: ["A. 操作性條件作用", "B. 區近發展", "C. 自我效能", "D. 觀察學習"],
-    answer: "B"
+    q: "下列何者是AR在教育上的應用？",
+    options: ["A. 實境解剖APP", "B. 黑板教學", "C. 紙本考卷", "D. 電子郵件"],
+    answer: "A"
+  },
+  {
+    q: "VR頭戴裝置主要用於？",
+    options: ["A. 沉浸式體驗", "B. 打印文件", "C. 聽音樂", "D. 發送簡訊"],
+    answer: "A"
+  },
+  {
+    q: "p5.js 中要畫一個圓形用哪個函式？",
+    options: ["A. ellipse", "B. circle", "C. arc", "D. round"],
+    answer: "A"
   },
   {
     q: "攝影中，白平衡主要影響什麼？",
     options: ["A. 亮度", "B. 色溫", "C. 對比", "D. 銳利度"],
     answer: "B"
+  },
+  {
+    q: "下列何者不是VR的特點？",
+    options: ["A. 沉浸感", "B. 互動性", "C. 實體觸感", "D. 虛擬環境"],
+    answer: "C"
+  },
+  {
+    q: "AR技術常用於？",
+    options: ["A. 實境導航", "B. 紙本閱讀", "C. 傳統黑板", "D. 收音機"],
+    answer: "A"
   }
 ];
 
@@ -143,41 +153,31 @@ function draw() {
     fill(60, 60, 120);
     textAlign(LEFT, TOP);
     drawMultiline(
-      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 5秒自動進入下一題\n4. 共五題計分",
+      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 3秒自動進入下一題\n4. 也可張開手掌提前切換\n5. 共五題計分",
       670, 110, 14
     );
+    clearAutoNextTimer();
   } else if (gameState === "quiz") {
     if (currentQuestion >= quizQuestions.length) {
       gameState = "result";
+      clearAutoNextTimer();
       return;
     }
     showQuestion();
+    showHandGesture();
 
-    // 快問快答倒數5秒
+    // 倒數顯示
     let elapsed = (millis() - questionStartTime) / 1000;
     fill(200, 60, 60);
     textSize(18);
     textAlign(CENTER, TOP);
-    text("倒數：" + max(0, (5 - floor(elapsed))) + " 秒", 760, 400);
+    text("倒數：" + max(0, (3 - floor(elapsed))) + " 秒", 760, 400);
 
-    // 5秒到自動判斷答案並進入下一題
-    if (!showResult && elapsed >= 5) {
-      showResult = true;
-      showEffect = true;
-      effectType = (selectedAnswer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
-      if (selectedAnswer === quizQuestions[currentQuestion].answer) score++;
-      effectTimer = millis();
-      setTimeout(() => {
-        selectedAnswer = "";
-        showResult = false;
-        showEffect = false;
-        currentQuestion++;
-        if (currentQuestion >= quizQuestions.length) {
-          gameState = "result";
-        } else {
-          questionStartTime = millis();
-        }
-      }, 1200); // 1.2秒特效後自動進入下一題
+    // 啟動自動切題計時器
+    if (!showResult && !autoNextTimer && elapsed < 3) {
+      autoNextTimer = setTimeout(() => {
+        nextQuestion();
+      }, 3000 - (millis() - questionStartTime));
     }
   } else if (gameState === "result") {
     fill(40, 80, 120);
@@ -186,8 +186,11 @@ function draw() {
     text("挑戰結束！", 760, 100);
     textSize(18);
     text("你的分數：" + score + " / 5", 760, 170);
+    text("答對：" + score + " 題", 760, 210);
+    text("答錯：" + (5 - score) + " 題", 760, 250);
     textSize(16);
-    text("按 Enter 再來一輪！", 760, 230);
+    text("按 Enter 再來一輪！", 760, 300);
+    clearAutoNextTimer();
   }
 
   // 臉部特效與右側特效
@@ -206,6 +209,7 @@ function draw() {
   }
 }
 
+// 顯示題目與選項
 function showQuestion() {
   if (currentQuestion >= quizQuestions.length) return; // 防呆
 
@@ -249,6 +253,73 @@ function showQuestion() {
   if (showResult) {
     fill(q.answer === selectedAnswer ? "green" : "red");
     text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 670, optionStartY + 180);
+  }
+}
+
+// 手勢偵測
+function showHandGesture() {
+  if (handPredictions.length > 0 && !showResult && currentQuestion < quizQuestions.length) {
+    let hand = handPredictions[0];
+    let fingerCount = countExtendedFingers(hand.landmarks);
+
+    // 1~4指選答案，需連續偵測10幀
+    if (fingerCount >= 1 && fingerCount <= 4) {
+      if (fingerCount === lastFingerCount) {
+        fingerCountFrame++;
+      } else {
+        fingerCountFrame = 1;
+        lastFingerCount = fingerCount;
+      }
+      if (fingerCountFrame >= FINGER_HOLD_FRAME) {
+        selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
+      }
+    } else {
+      fingerCountFrame = 0;
+      lastFingerCount = 0;
+    }
+
+    // 張開手掌(五指)提前切換
+    if (isHandOpen(hand.landmarks)) {
+      nextQuestion();
+    }
+  }
+}
+
+// 張開手掌判斷（五指全開）
+function isHandOpen(landmarks) {
+  let fingersOpen = [8, 12, 16, 20].every(i => landmarks[i][1] < landmarks[i - 2][1]);
+  let thumbOpen = landmarks[4][0] > landmarks[3][0];
+  return fingersOpen && thumbOpen;
+}
+
+// 切換到下一題
+function nextQuestion() {
+  if (showResult) return; // 避免重複切換
+  showResult = true;
+  showEffect = true;
+  effectType = (selectedAnswer === quizQuestions[currentQuestion].answer) ? "correct" : "wrong";
+  if (selectedAnswer === quizQuestions[currentQuestion].answer) score++;
+  effectTimer = millis();
+  clearAutoNextTimer();
+  setTimeout(() => {
+    selectedAnswer = "";
+    showResult = false;
+    showEffect = false;
+    currentQuestion++;
+    if (currentQuestion >= quizQuestions.length) {
+      gameState = "result";
+    } else {
+      questionStartTime = millis();
+      autoNextTimer = null;
+    }
+  }, 1200);
+}
+
+// 清除自動切題計時器
+function clearAutoNextTimer() {
+  if (autoNextTimer) {
+    clearTimeout(autoNextTimer);
+    autoNextTimer = null;
   }
 }
 
@@ -355,6 +426,7 @@ function countExtendedFingers(landmarks) {
 let lastFingerCount = 0;
 let fingerCountFrame = 0;
 const FINGER_HOLD_FRAME = 10; // 需連續偵測10幀才選擇
+let autoNextTimer = null; // 自動切題計時器
 
 function keyPressed() {
   if (gameState === "start" && keyCode === ENTER) {
