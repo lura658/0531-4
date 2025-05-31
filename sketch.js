@@ -142,19 +142,19 @@ function draw() {
   drawingContext.shadowBlur = 20;
   pop();
 
-  // 主題區塊
+  // 主題區塊（最上方）
   push();
   fill(240, 240, 210, 230);
   stroke(200, 200, 180);
   strokeWeight(1.5);
-  rect(660, 40, 200, 48, 16);
+  rect(660, 40, 200, 54, 16);
   noStroke();
   fill(40, 40, 80);
   textFont('Microsoft JhengHei');
-  textSize(22);
+  textSize(24);
   textStyle(BOLD);
   textAlign(CENTER, CENTER);
-  text("教育科技課程\n知識大亂鬥", 760, 64);
+  text("教育科技課程\n知識大亂鬥", 760, 67);
   pop();
 
   if (gameState === "start") {
@@ -181,7 +181,7 @@ function draw() {
     textSize(24);
     textStyle(BOLD);
     textAlign(CENTER, TOP);
-    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 760, 420);
+    text("倒數：" + max(0, (7 - floor(elapsed))) + " 秒", 760, 430);
 
     // 啟動自動切題計時器（7秒）
     if (!showResult && !autoNextTimer && elapsed < 7) {
@@ -193,33 +193,29 @@ function draw() {
     fill(40, 80, 120);
     textSize(22);
     textAlign(CENTER, TOP);
-    text("挑戰結束！", 760, 100);
+    text("挑戰結束！", 760, 110);
     textSize(18);
-    text("你的分數：" + score + " / 5", 760, 170);
-    text("答對：" + score + " 題", 760, 210);
-    text("答錯：" + (5 - score) + " 題", 760, 250);
+    text("你的分數：" + score + " / 5", 760, 180);
+    text("答對：" + score + " 題", 760, 220);
+    text("答錯：" + (5 - score) + " 題", 760, 260);
     textSize(16);
-    text("按 Enter 再來一輪！", 760, 300);
+    text("按 Enter 再來一輪！", 760, 320);
     clearAutoNextTimer();
   }
 
-  // 臉部特效與右側特效
-  if (predictions.length > 0 && showEffect) {
-    const keypoints = predictions[0].scaledMesh;
-    let headX = 640 - keypoints[10][0];
-    let headY = keypoints[10][1];
+  // 答對/錯特效（左右下角）
+  if (showEffect) {
     if (effectType === "correct") {
-      image(checkImg, headX - 30, headY - 100, 60, 60);
-      drawHappyEffect(800, 120);
+      drawFireworks(670, 430, 60); // 左下
+      drawFireworks(870, 430, 60); // 右下
     } else if (effectType === "wrong") {
-      image(crossImg, headX - 30, headY - 100, 60, 60);
-      drawSadEffect(800, 120);
-      drawBlackLines(keypoints);
+      drawSpiderWeb(670, 430, 60); // 左下
+      drawSpiderWeb(870, 430, 60); // 右下
     }
   }
 }
 
-// 顯示題目與選項（主題不再重複）
+// 顯示題目與選項（主題不再重複，題目區塊下移）
 function showQuestion() {
   if (currentQuestion >= quizQuestions.length) return; // 防呆
 
@@ -238,29 +234,30 @@ function showQuestion() {
     }
     lines.push(seg);
   });
-  // 題目區塊底色
+  // 題目區塊底色（下移，避免與主題重疊）
+  let questionY = 110;
   push();
-  fill(255, 255, 230, 180);
-  rect(665, 100, 200, lines.length * 22 + 18, 10);
+  fill(255, 255, 230, 200);
+  rect(665, questionY, 200, lines.length * 22 + 18, 10);
   pop();
   for (let i = 0; i < lines.length; i++) {
-    text(lines[i], 675, 110 + i * 22);
+    text(lines[i], 675, questionY + 10 + i * 22);
   }
-  let optionStartY = 110 + lines.length * 22 + 18; // 選項起始y
+  let optionStartY = questionY + lines.length * 22 + 28; // 選項起始y
 
   for (let i = 0; i < q.options.length; i++) {
     let y = optionStartY + i * 44;
     let opt = q.options[i];
     // 選項底色
     if (selectedAnswer === String.fromCharCode(65 + i)) {
-      fill(60, 150, 255, 220);
+      fill(60, 150, 255, 230);
       stroke(40, 80, 160);
       strokeWeight(2);
       rect(665, y - 5, 200, 38, 10);
       fill(255);
       noStroke();
     } else {
-      fill(220, 220, 240, 180);
+      fill(220, 220, 240, 200);
       stroke(120, 120, 180, 80);
       strokeWeight(1.2);
       rect(665, y - 5, 200, 38, 10);
@@ -467,28 +464,51 @@ function keyPressed() {
   }
 }
 
-// 煙火特效
-function drawFireworks(x, y) {
+// --- 大型煙火特效（左右下角）---
+function drawFireworks(x, y, size = 60) {
   push();
-  for (let i = 0; i < 12; i++) {
-    let angle = TWO_PI / 12 * i;
-    let len = 40 + 10 * sin((millis() - effectTimer) / 200 + i);
-    stroke(0, 200 + random(-30, 30), 0);
-    strokeWeight(3);
+  for (let i = 0; i < 16; i++) {
+    let angle = TWO_PI / 16 * i;
+    let len = size + 20 * sin((millis() - effectTimer) / 200 + i);
+    stroke(0, 200 + random(-30, 30), 0, 200);
+    strokeWeight(4);
     line(x, y, x + len * cos(angle), y + len * sin(angle));
   }
   pop();
 }
 
-// 答錯黑線特效
-function drawBlackLines(keypoints) {
-  let x = 640 - keypoints[10][0];
-  let y = keypoints[10][1] - 20;
+// --- 大型蜘蛛網特效（左右下角）---
+function drawSpiderWeb(x, y, size = 60) {
   push();
-  stroke(0);
-  strokeWeight(5);
-  for (let i = -30; i <= 30; i += 20) {
-    line(x + i, y, x + i + random(-5, 5), y + 30 + random(0, 10));
+  stroke(60, 60, 60, 180);
+  strokeWeight(2.5);
+  // 畫放射線
+  for (let i = 0; i < 8; i++) {
+    let angle = TWO_PI / 8 * i;
+    line(x, y, x + size * cos(angle), y + size * sin(angle));
+  }
+  // 畫圓弧
+  for (let r = size * 0.4; r <= size; r += size * 0.2) {
+    beginShape();
+    for (let i = 0; i <= 8; i++) {
+      let angle = TWO_PI / 8 * i;
+      vertex(x + r * cos(angle), y + r * sin(angle));
+    }
+    endShape();
+  }
+  // 畫蜘蛛
+  fill(40, 40, 40, 200);
+  ellipse(x, y + size * 0.25, size * 0.25, size * 0.18);
+  ellipse(x, y + size * 0.35, size * 0.15, size * 0.12);
+  // 腳
+  for (let i = 0; i < 8; i++) {
+    let angle = PI / 8 * i - PI / 4;
+    let sx = x + size * 0.1 * cos(angle);
+    let sy = y + size * 0.25 + size * 0.09 * sin(angle);
+    let ex = x + size * 0.18 * cos(angle);
+    let ey = y + size * 0.25 + size * 0.18 * sin(angle);
+    strokeWeight(2);
+    line(sx, sy, ex, ey);
   }
   pop();
 }
