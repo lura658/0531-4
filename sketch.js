@@ -270,7 +270,9 @@ function isFistGesture(landmarks) {
 
 // 判斷比讚（拇指伸直，其餘彎曲）
 function isThumbsUpGesture(landmarks) {
+  // 拇指伸直
   let thumbUp = landmarks[4][1] < landmarks[3][1] && landmarks[4][1] < landmarks[2][1];
+  // 其他四指彎曲
   let fingersBent = [8, 12, 16, 20].every(i => landmarks[i][1] > landmarks[i - 2][1]);
   return thumbUp && fingersBent;
 }
@@ -405,7 +407,7 @@ function showHandGesture() {
   }
 
   // 張開手(五指)切換下一題
-  if (waitingNext && handPredictions.length > 0 && countExtendedFingers(handPredictions[0].landmarks) === 5) {
+  if (waitingNext && handPredictions.length > 0 && isHandOpen(handPredictions[0].landmarks)) {
     selectedAnswer = "";
     showResult = false;
     showEffect = false;
@@ -417,4 +419,18 @@ function showHandGesture() {
       questionStartTime = millis(); // 下一題開始計時
     }
   }
+
+  // 比讚顯示說明
+  if (handPredictions.length > 0 && isThumbsUpGesture(handPredictions[0].landmarks)) {
+    showHelp = true;
+  } else {
+    showHelp = false;
+  }
+}
+
+// 判斷手掌是否張開（五指伸直）
+function isHandOpen(landmarks) {
+  let fingersOpen = [8, 12, 16, 20].every(i => landmarks[i][1] < landmarks[i - 2][1]);
+  let thumbOpen = landmarks[4][0] > landmarks[3][0];
+  return fingersOpen && thumbOpen;
 }
