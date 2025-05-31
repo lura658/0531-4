@@ -1,0 +1,33 @@
+{
+  "name": "edtech-game",
+  "version": "1.0.0",
+  "description": "An educational technology game that engages users with interactive learning activities.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.9.1",
+    "babel-loader": "^8.2.3",
+    "babel-core": "^7.0.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "^3.11.2",
+    "css-loader": "^6.5.1",
+    "style-loader": "^3.3.1"
+  },
+  "keywords": [
+    "education",
+    "game",
+    "interactive",
+    "learning"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}
