@@ -140,7 +140,10 @@ function draw() {
   if (gameState === "start") {
     text("教育科技課程知識大亂鬥", 660, 40);
     textSize(16);
-    drawMultiline("歡迎來到知識大亂鬥！\n1. 按 Enter 開始隨機五題\n2. 一手比選項(1~4指)，另一手握拳確認\n3. 答對有歡樂特效，答錯有陰暗特效\n4. 握拳確認答案，張開手(五指)切換下一題\n5. 比讚可隨時觀看說明\n快來挑戰你的教育科技腦力吧！", 660, 90, 12);
+    drawMultiline(
+      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動判斷\n4. 張開手切換下一題\n5. 比讚可隨時看說明", 
+      660, 90, 12
+    );
   } else if (gameState === "quiz") {
     showQuestion();
     showHandGesture();
@@ -169,7 +172,7 @@ function draw() {
     }
     fill(100, 100, 255);
     textSize(14);
-    drawMultiline("[比讚可隨時觀看遊戲說明]", 660, 440, 12);
+    drawMultiline("[比讚可隨時觀看說明]", 660, 440, 12);
   } else if (gameState === "result") {
     text("挑戰結束！", 660, 60);
     text("你的分數：" + score + " / 5", 660, 120);
@@ -186,7 +189,7 @@ function showQuestion() {
   text("第 " + (currentQuestion + 1) + " 題：", 660, 40);
   textSize(16);
 
-  // 計算題目換行後的行數
+  // 題目自動換行
   let lines = [];
   let segs = q.q.split('\n');
   segs.forEach(seg => {
@@ -317,6 +320,11 @@ function countExtendedFingers(landmarks) {
   return count;
 }
 
+// --- 新增全域變數 ---
+let lastFingerCount = 0;
+let fingerCountFrame = 0;
+const FINGER_HOLD_FRAME = 10; // 需連續偵測10幀才選擇
+
 function keyPressed() {
   if (gameState === "start" && keyCode === ENTER) {
     quizQuestions = shuffle(allQuestions).slice(0, 5);
@@ -326,7 +334,9 @@ function keyPressed() {
     selectedAnswer = "";
     showResult = false;
     showEffect = false;
-    questionStartTime = millis(); // 新增：開始計時
+    questionStartTime = millis();
+    lastFingerCount = 0;
+    fingerCountFrame = 0;
   }
   if (gameState === "result" && keyCode === ENTER) {
     gameState = "start";
@@ -360,13 +370,24 @@ function drawBlackLines(keypoints) {
 }
 
 function showHandGesture() {
-  if (handPredictions.length > 0 && !showResult && !waitingNext) {
+  if (handPredictions.length > 0 && !showResult && !waitingNext && currentQuestion < quizQuestions.length) {
     let hand = handPredictions[0];
     let fingerCount = countExtendedFingers(hand.landmarks);
 
-    // 1~4指選答案
+    // 1~4指選答案，需連續偵測10幀
     if (fingerCount >= 1 && fingerCount <= 4) {
-      selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
+      if (fingerCount === lastFingerCount) {
+        fingerCountFrame++;
+      } else {
+        fingerCountFrame = 1;
+        lastFingerCount = fingerCount;
+      }
+      if (fingerCountFrame >= FINGER_HOLD_FRAME) {
+        selectedAnswer = String.fromCharCode(64 + fingerCount); // 1->A, 2->B, ...
+      }
+    } else {
+      fingerCountFrame = 0;
+      lastFingerCount = 0;
     }
   }
 
@@ -377,7 +398,7 @@ function showHandGesture() {
     showEffect = false;
     waitingNext = false;
     currentQuestion++;
-    if (currentQuestion >= 5) {
+    if (currentQuestion >= quizQuestions.length) {
       gameState = "result";
     } else {
       questionStartTime = millis(); // 下一題開始計時
