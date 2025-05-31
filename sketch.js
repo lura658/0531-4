@@ -130,9 +130,7 @@ function draw() {
   push();
   translate(640, 0);
   scale(-1, 1);
-  if (video && video.loadedmetadata) {
-    image(video, 0, 0, 640, 480);
-  }
+  image(video, 0, 0, 640, 480);
   pop();
 
   // 右側：美編題目區塊
