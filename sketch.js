@@ -178,14 +178,31 @@ function draw() {
 }
 
 function showQuestion() {
+  if (currentQuestion >= quizQuestions.length) return; // 防呆
+
   let q = quizQuestions[currentQuestion];
   fill(0);
   textSize(18);
   text("第 " + (currentQuestion + 1) + " 題：", 660, 40);
   textSize(16);
-  drawMultiline(q.q, 660, 70, 10); // 題目自動換行
+
+  // 計算題目換行後的行數
+  let lines = [];
+  let segs = q.q.split('\n');
+  segs.forEach(seg => {
+    while (seg.length > 10) {
+      lines.push(seg.slice(0, 10));
+      seg = seg.slice(10);
+    }
+    lines.push(seg);
+  });
+  for (let i = 0; i < lines.length; i++) {
+    text(lines[i], 660, 70 + i * 22);
+  }
+  let optionStartY = 70 + lines.length * 22 + 20; // 選項起始y
+
   for (let i = 0; i < q.options.length; i++) {
-    let y = 120 + i * 40;
+    let y = optionStartY + i * 40;
     let opt = q.options[i];
     if (selectedAnswer === String.fromCharCode(65 + i)) {
       fill(0, 150, 255);
@@ -198,9 +215,17 @@ function showQuestion() {
   }
   if (showResult) {
     fill(q.answer === selectedAnswer ? "green" : "red");
-    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 660, 320);
-    text("張開手切換下一題", 660, 350);
+    text(q.answer === selectedAnswer ? "答對了！" : "答錯了！正確答案：" + q.answer, 660, optionStartY + 180);
+    text("張開手切換下一題", 660, optionStartY + 210);
   }
+}
+
+// 右側說明文字建議
+function drawGameInstructions() {
+  drawMultiline(
+    "1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動判斷\n4. 張開手切換下一題\n5. 比讚可隨時看說明",
+    660, 90, 12
+  );
 }
 
 // 自動換行繪製，每行最多 maxLen 字
