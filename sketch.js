@@ -352,10 +352,6 @@ function showQuestion() {
 function showHandGesture() {
   // 取得手勢
   // 1~4指選答案，需連續偵測10幀
-  // 張開五指可提前切題
-  if (handPredictions.length > 0 && !showResult && currentQuestion < quizQuestions.length) {
-    let hand = handPredictions[0];
-    let fingerCount = countExtendedFingers(hand.landmarks);
 
     // 1~4指選答案，需連續偵測10幀
     if (fingerCount >= 1 && fingerCount <= 4) {
@@ -373,12 +369,9 @@ function showHandGesture() {
       lastFingerCount = 0;
     }
 
-    // 張開手掌(五指)提前切換
-    if (isHandOpen(hand.landmarks)) {
-      nextQuestion();
-    }
+    
   }
-}
+
 
 // 張開手掌判斷（五指全開）
 function isHandOpen(landmarks) {
@@ -447,49 +440,12 @@ function showHandGesture() {
   }
 }
 
-// 握拳判斷（五指都彎曲）
-function isFistGesture(landmarks) {
-  // 指尖y大於指根y，且拇指靠近掌心
-  let fingersBent = [8, 12, 16, 20].every(i => landmarks[i][1] > landmarks[i - 2][1]);
-  let thumbBent = Math.abs(landmarks[4][0] - landmarks[2][0]) < 30;
-  return fingersBent && thumbBent;
-}
-
-// 判斷比讚（拇指伸直，其餘彎曲）
-function isThumbsUpGesture(landmarks) {
-  // 拇指伸直
-  let thumbUp = landmarks[4][1] < landmarks[3][1] && landmarks[4][1] < landmarks[2][1];
-  // 其他四指彎曲
-  let fingersBent = [8, 12, 16, 20].every(i => landmarks[i][1] > landmarks[i - 2][1]);
-  return thumbUp && fingersBent;
-}
-
-// 判斷OK手勢（拇指與食指指尖距離接近，其餘三指伸直）
-function isOKGesture(landmarks) {
-  let thumbTip = landmarks[4];
-  let indexTip = landmarks[8];
-  let dist = dist2d(thumbTip, indexTip);
-  let middle = landmarks[12][1] < landmarks[10][1];
-  let ring = landmarks[16][1] < landmarks[14][1];
-  let pinky = landmarks[20][1] < landmarks[18][1];
-  return dist < 40 && middle && ring && pinky;
-}
 
 function dist2d(a, b) {
   return Math.sqrt((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2);
 }
 
-// 判斷7手勢（食指與中指伸直，其餘彎曲）
-function detectSevenGesture(landmarks) {
-  let fingers = [
-    landmarks[8][1] < landmarks[6][1],  // 食指
-    landmarks[12][1] < landmarks[10][1], // 中指
-    landmarks[16][1] > landmarks[14][1], // 無名指
-    landmarks[20][1] > landmarks[18][1], // 小指
-    landmarks[4][0] < landmarks[3][0]    // 拇指彎曲
-  ];
-  return fingers[0] && fingers[1] && !fingers[2] && !fingers[3] && fingers[4];
-}
+
 
 // 歡樂特效
 function drawHappyEffect(x, y) {
@@ -555,18 +511,7 @@ function keyPressed() {
   }
 }
 
-// --- 大型煙火特效（左右下角）---
-function drawFireworks(x, y, size = 60) {
-  push();
-  for (let i = 0; i < 16; i++) {
-    let angle = TWO_PI / 16 * i;
-    let len = size + 20 * sin((millis() - effectTimer) / 200 + i);
-    stroke(0, 200 + random(-30, 30), 0, 200);
-    strokeWeight(4);
-    line(x, y, x + len * cos(angle), y + len * sin(angle));
-  }
-  pop();
-}
+
 
 // --- 大型蜘蛛網特效（左右下角）---
 function drawSpiderWeb(x, y, size = 60) {
@@ -723,9 +668,6 @@ function drawWebStyle(x, y, size, style) {
   }
   pop();
 }
-
-
-
 
 function submitScore() {
   let name = nameInput.value().trim() || "匿名";
