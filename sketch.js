@@ -534,13 +534,13 @@ function drawMultiline(str, x, y, maxLen) {
 function drawBalloons() {
   // 初始化氣球
   if (balloonList.length === 0) {
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 14; i++) {
       balloonList.push({
-        x: random(80, 560),
+        x: random(60, 580),
         y: random(320, 460),
         color: color(random(180,255), random(120,220), random(120,255)),
-        speed: random(1.2, 2.5),
-        size: random(32, 48)
+        speed: random(2.5, 4),    // 更快
+        size: random(48, 72)      // 更大
       });
     }
   }
@@ -549,14 +549,14 @@ function drawBalloons() {
   for (let b of balloonList) {
     fill(b.color);
     stroke(80, 80, 120, 120);
-    strokeWeight(2);
+    strokeWeight(2.5);
     ellipse(b.x, b.y, b.size * 0.8, b.size);
     // 氣球繩
     stroke(120, 120, 120, 120);
     line(b.x, b.y + b.size * 0.5, b.x, b.y + b.size * 0.9);
     // 飄動
     b.y -= b.speed;
-    b.x += sin(millis() / 400 + b.x) * 0.5;
+    b.x += sin(millis() / 400 + b.x) * 0.7;
   }
   pop();
   // 1.2秒後自動清空
@@ -576,22 +576,71 @@ function drawSpiderOverlay() {
 
   // 初始化蜘蛛與蜘蛛網
   if (spiderList.length === 0) {
-    for (let i = 0; i < 4; i++) {
+    // 角落網
+    spiderList.push({type:'corner', x:0, y:0, size:120, corner:'tl'});
+    spiderList.push({type:'corner', x:640, y:0, size:120, corner:'tr'});
+    spiderList.push({type:'corner', x:0, y:240, size:100, corner:'bl'});
+    spiderList.push({type:'corner', x:640, y:240, size:100, corner:'br'});
+    // 中間圓網
+    spiderList.push({type:'circle', x:180, y:90, size:90});
+    spiderList.push({type:'circle', x:480, y:120, size:70});
+    // 幾隻蜘蛛
+    for (let i = 0; i < 3; i++) {
       spiderList.push({
+        type:'spider',
         x: random(80, 560),
         y: random(40, 180),
-        size: random(36, 60),
-        web: random() < 0.7
+        size: random(30, 48)
       });
     }
   }
-  // 畫蜘蛛與蜘蛛網
+  // 畫蜘蛛網
   for (let s of spiderList) {
-    if (s.web) drawSpiderWeb(s.x, s.y, s.size * 0.7);
-    drawSpider(s.x, s.y + s.size * 0.2, s.size * 0.25);
+    if (s.type === 'corner') drawWebStyle(s.x, s.y, s.size, s.corner);
+    if (s.type === 'circle') drawWebStyle(s.x, s.y, s.size, 'circle');
+    if (s.type === 'spider') drawSpider(s.x, s.y, s.size);
   }
   // 1.2秒後自動清空
   if (millis() - effectTimer > 1100) spiderList = [];
+}
+
+// 多樣蜘蛛網樣式
+function drawWebStyle(x, y, size, style) {
+  push();
+  stroke(220,220,220,180);
+  strokeWeight(2);
+  noFill();
+  if (style === 'circle') {
+    // 圓形網
+    for (let r = size * 0.3; r <= size; r += size * 0.18) {
+      ellipse(x, y, r * 2, r * 2);
+    }
+    for (let i = 0; i < 12; i++) {
+      let angle = TWO_PI / 12 * i;
+      line(x, y, x + size * cos(angle), y + size * sin(angle));
+    }
+  } else {
+    // 角落網
+    let startAngle, endAngle, cx, cy, flipX = 1, flipY = 1;
+    if (style === 'tl') { startAngle = 0.5*PI; endAngle = PI; cx = x; cy = y; }
+    if (style === 'tr') { startAngle = 0; endAngle = 0.5*PI; cx = x; cy = y; flipX = -1;}
+    if (style === 'bl') { startAngle = PI; endAngle = 1.5*PI; cx = x; cy = y; flipY = -1;}
+    if (style === 'br') { startAngle = 1.5*PI; endAngle = 2*PI; cx = x; cy = y; flipX = -1; flipY = -1;}
+    // 弧線
+    for (let r = size * 0.3; r <= size; r += size * 0.18) {
+      beginShape();
+      for (let a = startAngle; a <= endAngle; a += PI/24) {
+        vertex(cx + flipX * r * cos(a), cy + flipY * r * sin(a));
+      }
+      endShape();
+    }
+    // 放射線
+    for (let i = 0; i < 7; i++) {
+      let angle = map(i, 0, 6, startAngle, endAngle);
+      line(cx, cy, cx + flipX * size * cos(angle), cy + flipY * size * sin(angle));
+    }
+  }
+  pop();
 }
 
 // 畫單隻蜘蛛
