@@ -195,35 +195,53 @@ function draw() {
     textAlign(CENTER, TOP);
     text("挑戰結束！", 760, 110);
     textSize(18);
-    text("你的分數：" + score + " / 5", 760, 180);
-    text("答對：" + score + " 題", 760, 220);
-    text("答錯：" + (5 - score) + " 題", 760, 260);
-    textSize(16);
-    text("請輸入姓名並按 Enter 送出", 760, 300);
+    text("你的分數：" + score + " / 5", 760, 160);
+    text("答對：" + score + " 題", 760, 200);
+    text("答錯：" + (5 - score) + " 題", 760, 240);
 
-    // 姓名輸入框
-    if (!window.nameInput) {
-      window.nameInput = createInput('');
-      nameInput.position(width / 2 + 100, height / 2 + 60);
-      nameInput.size(100);
-      nameInput.elt.placeholder = "姓名";
-      nameInput.elt.onkeydown = (e) => {
-        if (e.key === "Enter") {
-          submitScore();
-        }
-      };
-    }
+    // 狀態切換：輸入姓名或顯示排行榜
+    if (!window.rankState) window.rankState = "input";
 
-    // 排行榜
-    fill(40, 80, 120);
-    textSize(16);
-    textAlign(CENTER, TOP);
-    text("排行榜", 760, 340);
-    if (window.rankList && window.rankList.length > 0) {
-      for (let i = 0; i < window.rankList.length; i++) {
-        let r = window.rankList[i];
-        text(`${i + 1}. ${r.name}：${r.score} 分`, 760, 370 + i * 22);
+    if (window.rankState === "input") {
+      textSize(16);
+      text("請輸入姓名並按 Enter 送出", 760, 290);
+
+      // 姓名輸入框
+      if (!window.nameInput) {
+        window.nameInput = createInput('');
+        nameInput.position(width - 220, 320);
+        nameInput.size(120);
+        nameInput.elt.placeholder = "姓名";
+        nameInput.elt.onkeydown = (e) => {
+          if (e.key === "Enter") {
+            submitScore();
+          }
+        };
       }
+    } else if (window.rankState === "show") {
+      // 排行榜
+      fill(40, 80, 120);
+      textSize(18);
+      textAlign(CENTER, TOP);
+      text("排行榜", 760, 290);
+
+      if (window.rankList && window.rankList.length > 0) {
+        for (let i = 0; i < Math.min(10, window.rankList.length); i++) {
+          let r = window.rankList[i];
+          if (i < 3) {
+            textSize(22);
+            textStyle(BOLD);
+          } else {
+            textSize(18);
+            textStyle(NORMAL);
+          }
+          text(`${i + 1}. ${r.name}：${r.score} 分`, 760, 320 + i * 30);
+        }
+        textStyle(NORMAL);
+      }
+      textSize(14);
+      fill(120, 120, 120);
+      text("按 Enter 回到開頭", 760, 650 - 80);
     }
     clearAutoNextTimer();
   }
@@ -243,14 +261,15 @@ function showQuestion() {
   if (currentQuestion >= quizQuestions.length) return;
 
   let q = quizQuestions[currentQuestion];
+  // 顯示題數（在主題區塊下方）
   fill(40, 40, 80);
   textSize(16);
-  textAlign(LEFT, TOP);
-  // 顯示題數
-  text(`第 ${currentQuestion + 1} 題／共 ${quizQuestions.length} 題`, 675, 90);
+  textAlign(CENTER, TOP);
+  text(`第 ${currentQuestion + 1} 題／共 ${quizQuestions.length} 題`, 760, 100);
 
-  textSize(18);
   // 題目自動換行，每行最多10字
+  textSize(18);
+  textAlign(LEFT, TOP);
   let lines = [];
   let segs = q.q.split('\n');
   segs.forEach(seg => {
@@ -262,7 +281,7 @@ function showQuestion() {
   });
 
   // 題目區塊底色
-  let questionY = 110;
+  let questionY = 120;
   push();
   fill(255, 255, 230, 200);
   rect(665, questionY, 200, lines.length * 22 + 18, 10);
@@ -489,9 +508,14 @@ function keyPressed() {
     questionStartTime = millis();
     lastFingerCount = 0;
     fingerCountFrame = 0;
+    window.rankState = null;
+    if (window.nameInput) { nameInput.remove(); window.nameInput = null; }
   }
-  if (gameState === "result" && keyCode === ENTER) {
+  // 結束畫面：排行榜狀態下按 Enter 回到開頭
+  if (gameState === "result" && window.rankState === "show" && keyCode === ENTER) {
     gameState = "start";
+    window.rankState = null;
+    if (window.nameInput) { nameInput.remove(); window.nameInput = null; }
   }
 }
 
@@ -691,6 +715,7 @@ function submitScore() {
   if (!window.rankList) window.rankList = [];
   window.rankList.push({ name, score });
   window.rankList.sort((a, b) => b.score - a.score);
-  window.rankList = window.rankList.slice(0, 5); // 只留前5名
+  window.rankList = window.rankList.slice(0, 10); // 只留前10名
   if (window.nameInput) { nameInput.remove(); window.nameInput = null; }
+  window.rankState = "show";
 }
