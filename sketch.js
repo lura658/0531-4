@@ -389,6 +389,8 @@ function isHandOpen(landmarks) {
 
 // 切換到下一題
 function nextQuestion() {
+  // 顯示答題結果特效
+  // 1.2秒後自動切到下一題或結束
   if (showResult) return; // 避免重複切換
   showResult = true;
   showEffect = true;
@@ -722,27 +724,8 @@ function drawWebStyle(x, y, size, style) {
   pop();
 }
 
-// 畫單隻蜘蛛
-function drawSpider(x, y, size = 18) {
-  push();
-  // 先畫腳
-  stroke(30, 30, 30, 180);
-  strokeWeight(2);
-  for (let i = 0; i < 8; i++) {
-    let angle = PI / 8 * i - PI / 4;
-    let sx = x + size * 0.2 * cos(angle);
-    let sy = y + size * 0.1 * sin(angle);
-    let ex = x + size * 0.38 * cos(angle);
-    let ey = y + size * 0.18 * sin(angle);
-    line(sx, sy, ex, ey);
-  }
-  // 再畫身體
-  noStroke();
-  fill(40, 40, 40, 220);
-  ellipse(x, y, size, size * 0.7);
-  ellipse(x, y + size * 0.4, size * 0.6, size * 0.4);
-  pop();
-}
+
+
 
 function submitScore() {
   let name = nameInput.value().trim() || "匿名";
