@@ -1,18 +1,14 @@
-let video;
-let facemesh;
-let predictions = [];
-let handpose;
-let handPredictions = [];
-let gameState = "start";
-let currentQuestion = 0;
-let selectedAnswer = "";
-let showResult = false;
-let score = 0;
-let quizQuestions = [];
-let showEffect = false;
-let effectType = "";
-let effectTimer = 0;
-let showRankOnStart = false; // <--- 新增這行
+let video; // 攝影機物件
+let facemesh, predictions = []; // 臉部辨識
+let handpose, handPredictions = []; // 手勢辨識
+let gameState = "start"; // 遊戲狀態：start/quiz/result
+let currentQuestion = 0; // 當前題號
+let selectedAnswer = ""; // 當前選擇答案
+let showResult = false; // 是否顯示答題結果
+let score = 0; // 分數
+let quizQuestions = []; // 本輪題目
+let showEffect = false, effectType = "", effectTimer = 0; // 特效相關
+let showRankOnStart = false; // 首頁是否顯示排行榜
 
 // 題庫（p5.js、VR/AR、攝影基礎等）
 const allQuestions = [
@@ -88,12 +84,6 @@ const allQuestions = [
   }
 ];
 
-// 載入圖示
-let checkImg, crossImg;
-function preload() {
-  checkImg = loadImage('check.png'); // 英文檔名
-  crossImg = loadImage('cross.png');
-}
 
 let showHelp = false;
 let waitingNext = false;
@@ -123,6 +113,15 @@ function modelReady() {}
 function handModelReady() {}
 
 function draw() {
+  // 畫背景與攝影機畫面
+  // 畫右側美編區塊與主題
+  // 根據 gameState 決定顯示內容
+  // - start: 歡迎說明、排行榜(五指手勢時)
+  // - quiz: 顯示題目、選項、倒數
+  // - result: 顯示分數、姓名輸入或排行榜
+  // 顯示特效
+  // 首頁時偵測五指手勢切換排行榜
+
   background(230);
 
   // 左側：攝影機與互動（左右相反）
@@ -241,7 +240,7 @@ function draw() {
       fill(40, 80, 120);
       textSize(18);
       textAlign(CENTER, TOP);
-      text("排行榜", 760, 290);
+      text("排行榜", 750, 290);
 
       if (window.rankList && window.rankList.length > 0) {
         for (let i = 0; i < Math.min(10, window.rankList.length); i++) {
@@ -351,6 +350,9 @@ function showQuestion() {
 
 // 手勢偵測
 function showHandGesture() {
+  // 取得手勢
+  // 1~4指選答案，需連續偵測10幀
+  // 張開五指可提前切題
   if (handPredictions.length > 0 && !showResult && currentQuestion < quizQuestions.length) {
     let hand = handPredictions[0];
     let fingerCount = countExtendedFingers(hand.landmarks);
@@ -418,6 +420,9 @@ function clearAutoNextTimer() {
 
 // 只保留選項手勢偵測
 function showHandGesture() {
+  // 取得手勢
+  // 1~4指選答案，需連續偵測10幀
+  // 張開五指可提前切題
   if (handPredictions.length > 0 && !showResult && currentQuestion < quizQuestions.length) {
     let hand = handPredictions[0];
     let fingerCount = countExtendedFingers(hand.landmarks);
