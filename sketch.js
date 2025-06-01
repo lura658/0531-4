@@ -203,14 +203,12 @@ function draw() {
     clearAutoNextTimer();
   }
 
-  // 答對/錯特效（左右下角）
+  // 答對/錯特效（鏡頭畫面上）
   if (showEffect) {
     if (effectType === "correct") {
-      drawFireworks(670, 430, 60); // 左下
-      drawFireworks(870, 430, 60); // 右下
+      drawBalloons();
     } else if (effectType === "wrong") {
-      drawSpiderWeb(670, 430, 60); // 左下
-      drawSpiderWeb(870, 430, 60); // 右下
+      drawSpiderOverlay();
     }
   }
 }
@@ -446,6 +444,10 @@ let fingerCountFrame = 0;
 const FINGER_HOLD_FRAME = 10; // 需連續偵測10幀才選擇
 let autoNextTimer = null; // 自動切題計時器
 
+// --- 新增全域變數 ---
+let balloonList = []; // 答對時氣球
+let spiderList = [];  // 答錯時蜘蛛
+
 function keyPressed() {
   if (gameState === "start" && keyCode === ENTER) {
     quizQuestions = shuffle(allQuestions).slice(0, 5);
@@ -526,4 +528,88 @@ function drawMultiline(str, x, y, maxLen) {
   for (let i = 0; i < lines.length; i++) {
     text(lines[i], x, y + i * 22);
   }
+}
+
+// 答對/錯特效（鏡頭畫面上）
+function drawBalloons() {
+  // 初始化氣球
+  if (balloonList.length === 0) {
+    for (let i = 0; i < 12; i++) {
+      balloonList.push({
+        x: random(80, 560),
+        y: random(320, 460),
+        color: color(random(180,255), random(120,220), random(120,255)),
+        speed: random(1.2, 2.5),
+        size: random(32, 48)
+      });
+    }
+  }
+  push();
+  translate(0, 0);
+  for (let b of balloonList) {
+    fill(b.color);
+    stroke(80, 80, 120, 120);
+    strokeWeight(2);
+    ellipse(b.x, b.y, b.size * 0.8, b.size);
+    // 氣球繩
+    stroke(120, 120, 120, 120);
+    line(b.x, b.y + b.size * 0.5, b.x, b.y + b.size * 0.9);
+    // 飄動
+    b.y -= b.speed;
+    b.x += sin(millis() / 400 + b.x) * 0.5;
+  }
+  pop();
+  // 1.2秒後自動清空
+  if (millis() - effectTimer > 1100) balloonList = [];
+}
+
+function drawSpiderOverlay() {
+  // 畫上半部深灰漸層
+  push();
+  for (let i = 0; i < 120; i++) {
+    let alpha = map(i, 0, 120, 120, 0);
+    noStroke();
+    fill(40, 40, 40, alpha);
+    rect(0, i * 2, 640, 2);
+  }
+  pop();
+
+  // 初始化蜘蛛與蜘蛛網
+  if (spiderList.length === 0) {
+    for (let i = 0; i < 4; i++) {
+      spiderList.push({
+        x: random(80, 560),
+        y: random(40, 180),
+        size: random(36, 60),
+        web: random() < 0.7
+      });
+    }
+  }
+  // 畫蜘蛛與蜘蛛網
+  for (let s of spiderList) {
+    if (s.web) drawSpiderWeb(s.x, s.y, s.size * 0.7);
+    drawSpider(s.x, s.y + s.size * 0.2, s.size * 0.25);
+  }
+  // 1.2秒後自動清空
+  if (millis() - effectTimer > 1100) spiderList = [];
+}
+
+// 畫單隻蜘蛛
+function drawSpider(x, y, size = 18) {
+  push();
+  fill(40, 40, 40, 220);
+  ellipse(x, y, size, size * 0.7);
+  ellipse(x, y + size * 0.4, size * 0.6, size * 0.4);
+  // 腳
+  stroke(30, 30, 30, 180);
+  strokeWeight(2);
+  for (let i = 0; i < 8; i++) {
+    let angle = PI / 8 * i - PI / 4;
+    let sx = x + size * 0.2 * cos(angle);
+    let sy = y + size * 0.1 * sin(angle);
+    let ex = x + size * 0.38 * cos(angle);
+    let ey = y + size * 0.18 * sin(angle);
+    line(sx, sy, ex, ey);
+  }
+  pop();
 }
