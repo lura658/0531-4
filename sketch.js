@@ -203,10 +203,10 @@ function draw() {
 
     if (window.rankState === "input") {
       textSize(16);
-      text("請輸入姓名並按 Enter 送出", 760, 300);
+      text("請輸入姓名並按 Enter 送出", 760, 260);
       if (!window.nameInput) {
         window.nameInput = createInput('');
-        nameInput.position(720, 355); // 讓輸入框在提示文字下方
+        nameInput.position(760, 355); // 讓輸入框在提示文字下方
         nameInput.size(120);
         nameInput.elt.placeholder = "姓名";
         nameInput.elt.onkeydown = (e) => {
