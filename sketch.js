@@ -228,7 +228,7 @@ function draw() {
       text("請輸入姓名並按 Enter 送出", 760, 280);
       if (!window.nameInput) {
         window.nameInput = createInput('');
-        nameInput.position(760, 300); // 在提示字正下方，白色區塊內
+        nameInput.position(790, 340); // 下移40，左移30
         nameInput.size(120);
         nameInput.elt.placeholder = "姓名";
         nameInput.elt.onkeydown = (e) => {
