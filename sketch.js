@@ -199,7 +199,32 @@ function draw() {
     text("答對：" + score + " 題", 760, 220);
     text("答錯：" + (5 - score) + " 題", 760, 260);
     textSize(16);
-    text("按 Enter 再來一輪！", 760, 320);
+    text("請輸入姓名並按 Enter 送出", 760, 300);
+
+    // 姓名輸入框
+    if (!window.nameInput) {
+      window.nameInput = createInput('');
+      nameInput.position(width / 2 + 100, height / 2 + 60);
+      nameInput.size(100);
+      nameInput.elt.placeholder = "姓名";
+      nameInput.elt.onkeydown = (e) => {
+        if (e.key === "Enter") {
+          submitScore();
+        }
+      };
+    }
+
+    // 排行榜
+    fill(40, 80, 120);
+    textSize(16);
+    textAlign(CENTER, TOP);
+    text("排行榜", 760, 340);
+    if (window.rankList && window.rankList.length > 0) {
+      for (let i = 0; i < window.rankList.length; i++) {
+        let r = window.rankList[i];
+        text(`${i + 1}. ${r.name}：${r.score} 分`, 760, 370 + i * 22);
+      }
+    }
     clearAutoNextTimer();
   }
 
@@ -219,9 +244,12 @@ function showQuestion() {
 
   let q = quizQuestions[currentQuestion];
   fill(40, 40, 80);
-  textSize(18);
+  textSize(16);
   textAlign(LEFT, TOP);
+  // 顯示題數
+  text(`第 ${currentQuestion + 1} 題／共 ${quizQuestions.length} 題`, 675, 90);
 
+  textSize(18);
   // 題目自動換行，每行最多10字
   let lines = [];
   let segs = q.q.split('\n');
@@ -656,4 +684,13 @@ function drawSpider(x, y, size = 18) {
   ellipse(x, y, size, size * 0.7);
   ellipse(x, y + size * 0.4, size * 0.6, size * 0.4);
   pop();
+}
+
+function submitScore() {
+  let name = nameInput.value().trim() || "匿名";
+  if (!window.rankList) window.rankList = [];
+  window.rankList.push({ name, score });
+  window.rankList.sort((a, b) => b.score - a.score);
+  window.rankList = window.rankList.slice(0, 5); // 只留前5名
+  if (window.nameInput) { nameInput.remove(); window.nameInput = null; }
 }
