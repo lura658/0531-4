@@ -646,10 +646,7 @@ function drawWebStyle(x, y, size, style) {
 // 畫單隻蜘蛛
 function drawSpider(x, y, size = 18) {
   push();
-  fill(40, 40, 40, 220);
-  ellipse(x, y, size, size * 0.7);
-  ellipse(x, y + size * 0.4, size * 0.6, size * 0.4);
-  // 腳
+  // 先畫腳
   stroke(30, 30, 30, 180);
   strokeWeight(2);
   for (let i = 0; i < 8; i++) {
@@ -660,5 +657,10 @@ function drawSpider(x, y, size = 18) {
     let ey = y + size * 0.18 * sin(angle);
     line(sx, sy, ex, ey);
   }
+  // 再畫身體
+  noStroke();
+  fill(40, 40, 40, 220);
+  ellipse(x, y, size, size * 0.7);
+  ellipse(x, y + size * 0.4, size * 0.6, size * 0.4);
   pop();
 }
