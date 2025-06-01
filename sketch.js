@@ -162,10 +162,33 @@ function draw() {
     fill(60, 60, 120);
     textAlign(LEFT, TOP);
     drawMultiline(
-      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動進入下一題\n4. 也可張開手掌提前切換\n5. 共五題計分",
+      "歡迎來挑戰！\n1. 按Enter開始\n2. 伸出1~4指選答案\n3. 7秒自動進入下一題\n4. 也可張開手掌提前切換\n5. 共五題計分\n\n在首頁比出五指可查看排行榜",
       670, 110, 14
     );
     clearAutoNextTimer();
+
+    // 顯示排行榜
+    if (showRankOnStart && window.rankList && window.rankList.length > 0) {
+      fill(40, 80, 120);
+      textSize(20);
+      textAlign(CENTER, TOP);
+      text("排行榜", 760, 320);
+      for (let i = 0; i < Math.min(10, window.rankList.length); i++) {
+        let r = window.rankList[i];
+        if (i < 3) {
+          textSize(22);
+          textStyle(BOLD);
+        } else {
+          textSize(18);
+          textStyle(NORMAL);
+        }
+        text(`${i + 1}. ${r.name}：${r.score} 分`, 760, 350 + i * 30);
+      }
+      textStyle(NORMAL);
+      textSize(14);
+      fill(120, 120, 120);
+      text("放下手勢可關閉排行榜", 760, 650 - 80);
+    }
   } else if (gameState === "quiz") {
     if (currentQuestion >= quizQuestions.length) {
       gameState = "result";
@@ -206,7 +229,7 @@ function draw() {
       text("請輸入姓名並按 Enter 送出", 760, 260);
       if (!window.nameInput) {
         window.nameInput = createInput('');
-        nameInput.position(760, 355); // 讓輸入框在提示文字下方
+        nameInput.position(700, 285); // 在提示字正下方，白色區塊內
         nameInput.size(120);
         nameInput.elt.placeholder = "姓名";
         nameInput.elt.onkeydown = (e) => {
