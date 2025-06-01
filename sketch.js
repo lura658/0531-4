@@ -1,19 +1,18 @@
 let video;
 let facemesh;
 let predictions = [];
-
 let handpose;
 let handPredictions = [];
-
-let gameState = "start"; // start, quiz, result
+let gameState = "start";
 let currentQuestion = 0;
 let selectedAnswer = "";
 let showResult = false;
 let score = 0;
 let quizQuestions = [];
 let showEffect = false;
-let effectType = ""; // "correct" or "wrong"
+let effectType = "";
 let effectTimer = 0;
+let showRankOnStart = false; // <--- 新增這行
 
 // 題庫（p5.js、VR/AR、攝影基礎等）
 const allQuestions = [
@@ -271,6 +270,17 @@ function draw() {
       drawBalloons();
     } else if (effectType === "wrong") {
       drawSpiderOverlay();
+    }
+  }
+
+  if (gameState === "start") {
+    if (
+      handPredictions.length > 0 &&
+      isHandOpen(handPredictions[0].landmarks)
+    ) {
+      showRankOnStart = true;
+    } else {
+      showRankOnStart = false;
     }
   }
 }
