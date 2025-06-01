@@ -215,24 +215,25 @@ function draw() {
 
 // 顯示題目與選項（主題不再重複，題目區塊下移）
 function showQuestion() {
-  if (currentQuestion >= quizQuestions.length) return; // 防呆
+  if (currentQuestion >= quizQuestions.length) return;
 
   let q = quizQuestions[currentQuestion];
   fill(40, 40, 80);
   textSize(18);
   textAlign(LEFT, TOP);
 
-  // 題目自動換行
+  // 題目自動換行，每行最多10字
   let lines = [];
   let segs = q.q.split('\n');
   segs.forEach(seg => {
-    while (seg.length > 12) {
-      lines.push(seg.slice(0, 12));
-      seg = seg.slice(12);
+    while (seg.length > 10) {
+      lines.push(seg.slice(0, 10));
+      seg = seg.slice(10);
     }
     lines.push(seg);
   });
-  // 題目區塊底色（下移，避免與主題重疊）
+
+  // 題目區塊底色
   let questionY = 110;
   push();
   fill(255, 255, 230, 200);
@@ -241,7 +242,7 @@ function showQuestion() {
   for (let i = 0; i < lines.length; i++) {
     text(lines[i], 675, questionY + 10 + i * 22);
   }
-  let optionStartY = questionY + lines.length * 22 + 28; // 選項起始y
+  let optionStartY = questionY + lines.length * 22 + 28;
 
   for (let i = 0; i < q.options.length; i++) {
     let y = optionStartY + i * 44;
@@ -574,7 +575,7 @@ function drawSpiderOverlay() {
   }
   pop();
 
-  // 初始化蜘蛛與蜘蛛網
+  // 初始化蜘蛛網
   if (spiderList.length === 0) {
     // 角落網
     spiderList.push({type:'corner', x:0, y:0, size:120, corner:'tl'});
@@ -584,21 +585,13 @@ function drawSpiderOverlay() {
     // 中間圓網
     spiderList.push({type:'circle', x:180, y:90, size:90});
     spiderList.push({type:'circle', x:480, y:120, size:70});
-    // 幾隻蜘蛛
-    for (let i = 0; i < 3; i++) {
-      spiderList.push({
-        type:'spider',
-        x: random(80, 560),
-        y: random(40, 180),
-        size: random(30, 48)
-      });
-    }
+    // 不再加入蜘蛛
   }
   // 畫蜘蛛網
   for (let s of spiderList) {
     if (s.type === 'corner') drawWebStyle(s.x, s.y, s.size, s.corner);
     if (s.type === 'circle') drawWebStyle(s.x, s.y, s.size, 'circle');
-    if (s.type === 'spider') drawSpider(s.x, s.y, s.size);
+    // 不再畫蜘蛛
   }
   // 1.2秒後自動清空
   if (millis() - effectTimer > 1100) spiderList = [];
