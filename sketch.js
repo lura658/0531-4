@@ -209,7 +209,7 @@ function draw() {
       // 姓名輸入框
       if (!window.nameInput) {
         window.nameInput = createInput('');
-        nameInput.position(width - 220, 320);
+        nameInput.position(700, 330); // 700, 330 可依你的右側白色區塊微調
         nameInput.size(120);
         nameInput.elt.placeholder = "姓名";
         nameInput.elt.onkeydown = (e) => {
