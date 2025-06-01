@@ -199,17 +199,14 @@ function draw() {
     text("答對：" + score + " 題", 760, 200);
     text("答錯：" + (5 - score) + " 題", 760, 240);
 
-    // 狀態切換：輸入姓名或顯示排行榜
     if (!window.rankState) window.rankState = "input";
 
     if (window.rankState === "input") {
       textSize(16);
-      text("請輸入姓名並按 Enter 送出", 760, 290);
-
-      // 姓名輸入框
+      text("請輸入姓名並按 Enter 送出", 760, 320);
       if (!window.nameInput) {
         window.nameInput = createInput('');
-        nameInput.position(700, 330); // 700, 330 可依你的右側白色區塊微調
+        nameInput.position(700, 355); // 讓輸入框在提示文字下方
         nameInput.size(120);
         nameInput.elt.placeholder = "姓名";
         nameInput.elt.onkeydown = (e) => {
@@ -219,7 +216,6 @@ function draw() {
         };
       }
     } else if (window.rankState === "show") {
-      // 排行榜
       fill(40, 80, 120);
       textSize(18);
       textAlign(CENTER, TOP);
